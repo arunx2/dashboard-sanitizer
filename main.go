@@ -15,14 +15,6 @@ func main() {
 	//generate command flags
 	esObjectFile := flag.String("source", "", "The Elastic dashboard object file in ndjson.")
 	outputFile := flag.String("output", "os_dashboard_objects.ndjson", "The OpenSearch compatible dashboard object file in ndjson.")
-
-	/*
-		TODO:
-		1. Read the source line by line
-		2. skip if the `Type` is lens
-		3. update the MigrationVersion
-		4.
-	*/
 	flag.Parse()
 
 	if *esObjectFile == "" {
