@@ -2,10 +2,12 @@
 Dashboards ndjson sanitizer
 Usage
 ```
--output string
-        The OpenSearch compatible dashboard object file in ndjson. (default "os_dashboard_objects.ndjson")
- -source string
+--source string
         The Elastic dashboard object file in ndjson.
+--output string
+        The OpenSearch compatible dashboard object file in ndjson. (default "os_dashboard_objects.ndjson")
+--version
+        Prints the version number
 ```
 example:
 ```
