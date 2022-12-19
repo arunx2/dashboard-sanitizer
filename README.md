@@ -1,6 +1,6 @@
 # dashboard-sanitizer
 
-If the Kibana objects are exported from 7.10.2 or later version, it may not be loaded into OpenSearch Dashboards successfully. This tools makes it compatible to OpenSearch Dashboards by fixing the version numbers for each kibana object and removes any incompatible objects. 
+If the Kibana objects are exported from 7.10.2 or later version, it may not be loaded into OpenSearch Dashboards successfully. This tool makes it compatible to OpenSearch Dashboards by fixing the version numbers for each kibana object and removes any incompatible objects. 
 
 ```
 Usage
