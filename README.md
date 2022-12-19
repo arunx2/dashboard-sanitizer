@@ -1,7 +1,9 @@
 # dashboard-sanitizer
-Dashboards ndjson sanitizer
-Usage
+
+If the Kibana objects are exported from 7.10.2 or later version, it may not be loaded into OpenSearch Dashboards successfully. This tools makes it compatible to OpenSearch Dashboards by fixing the version numbers for each kibana object and removes any incompatible objects. 
+
 ```
+Usage
 --source string
         The Elastic dashboard object file in ndjson.
 --output string
