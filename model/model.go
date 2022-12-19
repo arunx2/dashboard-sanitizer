@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type References struct {
 	ID   string `json:"id,omitempty"`
@@ -45,4 +48,35 @@ type DashboardObject struct {
 	Type       string       `json:"type,omitempty"`
 	UpdatedAt  time.Time    `json:"updated_at,omitempty"`
 	Version    string       `json:"version,omitempty"`
+}
+
+func (do *DashboardObject) MakeCompatibleToOS() (err error) {
+	switch do.Type {
+	case "dashboard":
+		//TODO: check if the version is greater than 7.9.3, leave the value as is if it is less than this.
+		do.MigrationVersion.Dashboard = "7.9.3"
+		//fix some visualization references name
+		//var temp []sm.References
+		for i := range do.References {
+			//if do.References[i].Type == "visualization" {
+			do.References[i].Name = getNormalizedVizName(do.References[i].Name)
+			//temp = append(temp, do.References[i])
+			//}
+		}
+		//do.References = temp
+	case "visualization":
+		do.MigrationVersion.Visualization = "7.9.3"
+		break
+	case "index-pattern":
+		do.MigrationVersion.IndexPattern = "7.6.0"
+		break
+	}
+	return
+}
+
+func getNormalizedVizName(s string) string {
+	if idx := strings.Index(s, ":"); idx != -1 {
+		return s[idx+1:]
+	}
+	return s
 }
