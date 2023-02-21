@@ -15,3 +15,4 @@
 # vendor/
 /.idea/
 /samples/
+.DS_Store
