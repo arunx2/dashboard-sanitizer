@@ -1,6 +1,8 @@
 package model
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -55,15 +57,18 @@ func (do *DashboardObject) MakeCompatibleToOS() (err error) {
 	case "dashboard":
 		//TODO: check if the version is greater than 7.9.3, leave the value as is if it is less than this.
 		do.MigrationVersion.Dashboard = "7.9.3"
+		do.SanitizePanelJSON()
 		//fix some visualization references name
-		//var temp []sm.References
+		var temp []References
 		for i := range do.References {
-			//if do.References[i].Type == "visualization" {
-			do.References[i].Name = getNormalizedVizName(do.References[i].Name)
-			//temp = append(temp, do.References[i])
-			//}
+			if isCompatibleObjectType(do.References[i].Type) {
+				if do.References[i].Type == "visualization" {
+					do.References[i].Name = getNormalizedVizName(do.References[i].Name)
+				}
+				temp = append(temp, do.References[i])
+			}
 		}
-		//do.References = temp
+		do.References = temp
 	case "visualization":
 		do.MigrationVersion.Visualization = "7.9.3"
 		break
@@ -82,9 +87,36 @@ func getNormalizedVizName(s string) string {
 }
 
 func (do *DashboardObject) IsCompatibleType() bool {
-	switch do.Type {
-	case "", "lens", "canvas-workpad", "canvas-element", "graph-workspace", "connector", "rule":
+	return isCompatibleObjectType(do.Type)
+}
+
+func isCompatibleObjectType(objectType string) bool {
+	switch objectType {
+	case "", "lens", "map", "canvas-workpad", "canvas-element", "graph-workspace", "connector", "rule":
 		return false
 	}
 	return true
+}
+
+// Removes all non-compatible object types from the panel json object
+func (do *DashboardObject) SanitizePanelJSON() (err error) {
+	var panels []map[string]interface{}
+
+	err = json.Unmarshal([]byte(do.Attributes.PanelsJSON), &panels)
+	if err != nil {
+		return
+	}
+	var results []map[string]interface{}
+	for _, panel := range panels {
+		if !isCompatibleObjectType(fmt.Sprintf("%v", panel["type"])) {
+			continue
+		}
+		results = append(results, panel)
+	}
+	resultBytes, er := json.Marshal(results)
+	if er != nil {
+		return er
+	}
+	do.Attributes.PanelsJSON = string(resultBytes)
+	return
 }

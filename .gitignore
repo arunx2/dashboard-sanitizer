@@ -16,3 +16,4 @@
 /.idea/
 /samples/
 .DS_Store
+/os_dashboard_objects.ndjson
