@@ -80,3 +80,11 @@ func getNormalizedVizName(s string) string {
 	}
 	return s
 }
+
+func (do *DashboardObject) IsCompatibleType() bool {
+	switch do.Type {
+	case "", "lens", "canvas-workpad", "canvas-element", "graph-workspace", "connector", "rule":
+		return false
+	}
+	return true
+}

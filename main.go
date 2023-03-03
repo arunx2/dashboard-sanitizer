@@ -38,7 +38,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Decode failed: %v", err)
 			return
 		}
-		if do.Type == "lens" || do.Type == "" {
+		if !do.IsCompatibleType() {
 			continue
 		}
 		_ = do.MakeCompatibleToOS()
