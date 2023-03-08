@@ -2,9 +2,9 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"dashboard-sanitizer/config"
 	sm "dashboard-sanitizer/model"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/olivere/ndjson"
@@ -26,15 +26,25 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	b, _ := os.ReadFile(*esObjectFile)
-	reader := ndjson.NewReader(bytes.NewReader(b))
+	file, err := os.Open(*esObjectFile)
+	if err != nil {
+		fmt.Print("Error reading source file: ", err)
+		os.Exit(1)
+	}
+	scanner := bufio.NewScanner(file)
+	buf := make([]byte, 0, 64*1024)
+	scanner.Buffer(buf, 1024*1024)
+
 	f, _ := os.Create(*outputFile)
 	defer f.Close()
 
-	writer := ndjson.NewWriter(bufio.NewWriter(f))
-	for reader.Next() {
+	outBuff := bufio.NewWriter(f)
+	writer := ndjson.NewWriter(outBuff)
+
+	for scanner.Scan() {
+		line := scanner.Text()
 		var do sm.DashboardObject
-		if err := reader.Decode(&do); err != nil {
+		if err := json.Unmarshal([]byte(line), &do); err != nil {
 			fmt.Fprintf(os.Stderr, "Decode failed: %v", err)
 			return
 		}
@@ -44,9 +54,15 @@ func main() {
 		_ = do.MakeCompatibleToOS()
 		err := writer.Encode(do)
 		if err != nil {
+			fmt.Print(err)
 			return
 		}
+		outBuff.Flush()
 
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Error reading file:", err)
+		return
 	}
 	fmt.Printf("%s file is sanitized and output available at %s", *esObjectFile, *outputFile)
 
