@@ -36,7 +36,12 @@ func main() {
 	scanner.Buffer(buf, 1024*1024)
 
 	f, _ := os.Create(*outputFile)
-	defer f.Close()
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+
+		}
+	}(f)
 
 	outBuff := bufio.NewWriter(f)
 	writer := ndjson.NewWriter(outBuff)
@@ -57,7 +62,11 @@ func main() {
 			fmt.Print(err)
 			return
 		}
-		outBuff.Flush()
+		//Flush after each line processed
+		err = outBuff.Flush()
+		if err != nil {
+			fmt.Print("Error writing to output file :", err)
+		}
 
 	}
 	if err := scanner.Err(); err != nil {
