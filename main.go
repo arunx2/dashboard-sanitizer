@@ -50,7 +50,7 @@ func main() {
 		line := scanner.Text()
 		var do sm.DashboardObject
 		if err := json.Unmarshal([]byte(line), &do); err != nil {
-			fmt.Fprintf(os.Stderr, "Decode failed: %v", err)
+			fmt.Printf("Decode failed: %v", err)
 			return
 		}
 		if !do.IsCompatibleType() {
