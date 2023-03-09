@@ -16,6 +16,7 @@ func main() {
 	esObjectFile := flag.String("source", "", "The Elastic dashboard object file in ndjson.")
 	outputFile := flag.String("output", "os_dashboard_objects.ndjson", "The OpenSearch compatible dashboard object file in ndjson.")
 	versionFlag := flag.Bool("version", false, "Prints the version number")
+
 	flag.Parse()
 
 	if *versionFlag {
@@ -45,7 +46,7 @@ func main() {
 
 	outBuff := bufio.NewWriter(f)
 	writer := ndjson.NewWriter(outBuff)
-
+	counter := NewStatusCount()
 	for scanner.Scan() {
 		line := scanner.Text()
 		var do sm.DashboardObject
@@ -54,6 +55,7 @@ func main() {
 			return
 		}
 		if !do.IsCompatibleType() {
+			counter.RegisterSkipped(do)
 			continue
 		}
 		_ = do.MakeCompatibleToOS()
@@ -67,12 +69,13 @@ func main() {
 		if err != nil {
 			fmt.Print("Error writing to output file :", err)
 		}
+		counter.RegisterProcessed(do)
 
 	}
 	if err := scanner.Err(); err != nil {
 		fmt.Println("Error reading file:", err)
 		return
 	}
-	fmt.Printf("%s file is sanitized and output available at %s", *esObjectFile, *outputFile)
-
+	fmt.Printf("\n %s file is sanitized and output available at %s \n", *esObjectFile, *outputFile)
+	counter.PrintStats()
 }
