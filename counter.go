@@ -2,8 +2,8 @@ package main
 
 import (
 	sm "dashboard-sanitizer/model"
-	"encoding/json"
 	"fmt"
+	"github.com/clarketm/json"
 )
 
 type Stats struct {

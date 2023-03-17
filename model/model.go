@@ -1,8 +1,8 @@
 package model
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/clarketm/json"
 	"strings"
 	"time"
 )
@@ -13,17 +13,27 @@ type References struct {
 	Type string `json:"type,omitempty"`
 }
 
+type SavedObjectMeta struct {
+	SearchSourceJSON string `json:"searchSourceJSON,omitempty"`
+}
+
+type MigrationVersion struct {
+	Lens          string `json:"lens,omitempty"`          //should be removed for OpenSearch
+	Dashboard     string `json:"dashboard,omitempty"`     // the version should be 7.9.3 or less
+	IndexPattern  string `json:"index-pattern,omitempty"` // the version should be 7.6.0 or less
+	Visualization string `json:"visualization,omitempty"` // the version should be 7.9.3 or less
+}
+
 type DashboardObject struct {
 	Attributes struct {
-		Description           string `json:"description,omitempty"`
-		Hits                  int    `json:"hits,omitempty"`
-		KibanaSavedObjectMeta struct {
-			SearchSourceJSON string `json:"searchSourceJSON,omitempty"`
-		} `json:"kibanaSavedObjectMeta,omitempty"`
-		OptionsJSON string `json:"optionsJSON,omitempty"`
-		PanelsJSON  string `json:"panelsJSON,omitempty"`
-		TimeRestore bool   `json:"timeRestore,omitempty"`
-		Title       string `json:"title,omitempty"`
+		Description           string           `json:"description,omitempty"`
+		Hits                  int              `json:"hits,omitempty"`
+		KibanaSavedObjectMeta *SavedObjectMeta `json:"kibanaSavedObjectMeta,omitempty"`
+		OptionsJSON           string           `json:"optionsJSON,omitempty"`
+		PanelsJSON            string           `json:"panelsJSON,omitempty"`
+		LocatorJSON           string           `json:"locatorJSON,omitempty"`
+		TimeRestore           bool             `json:"timeRestore,omitempty"`
+		Title                 string           `json:"title,omitempty"`
 		//Index-patter related START
 		RuntimeFieldMap string `json:"runtimeFieldMap,omitempty"`
 		FieldAttrs      string `json:"fieldAttrs,omitempty"`
@@ -36,20 +46,23 @@ type DashboardObject struct {
 		VisualizationType string `json:"visualizationType,omitempty"`
 		UIStateJSON       string `json:"uiStateJSON,omitempty"`
 		VisState          string `json:"visState,omitempty"`
-		Version           int    `json:"version"`
+		Version           int    `json:"version,omitempty"`
+
+		Url         string   `json:"url,omitempty"`
+		AccessCount int      `json:"accessCount,omitempty"`
+		AccessDate  int64    `json:"accessDate,omitempty"`
+		CreateDate  int64    `json:"createDate,omitempty"`
+		Columns     []string `json:"columns,omitempty"`
+		Slug        string   `json:"slug,omitempty"`
 	} `json:"attributes,omitempty"`
-	CoreMigrationVersion string `json:"coreMigrationVersion,omitempty"`
-	ID                   string `json:"id,omitempty"`
-	MigrationVersion     struct {
-		Lens          string `json:"lens,omitempty"`          //should be removed for OpenSearch
-		Dashboard     string `json:"dashboard,omitempty"`     // the version should be 7.9.3 or less
-		IndexPattern  string `json:"index-pattern,omitempty"` // the version should be 7.6.0 or less
-		Visualization string `json:"visualization,omitempty"` // the version should be 7.9.3 or less
-	} `json:"migrationVersion,omitempty"`
-	References []References `json:"references,omitempty"`
-	Type       string       `json:"type,omitempty"`
-	UpdatedAt  time.Time    `json:"updated_at,omitempty"`
-	Version    string       `json:"version,omitempty"`
+	CoreMigrationVersion string            `json:"coreMigrationVersion,omitempty"`
+	ID                   string            `json:"id,omitempty"`
+	MigrationVersion     *MigrationVersion `json:"migrationVersion,omitempty"`
+	References           []References      `json:"references,omitempty"`
+	Sort                 []int64           `json:"sort"`
+	Type                 string            `json:"type,omitempty"`
+	UpdatedAt            time.Time         `json:"updated_at,omitempty"`
+	Version              string            `json:"version,omitempty"`
 }
 
 func (do *DashboardObject) MakeCompatibleToOS() (err error) {
@@ -92,13 +105,13 @@ func (do *DashboardObject) IsCompatibleType() bool {
 
 func isCompatibleObjectType(objectType string) bool {
 	switch objectType {
-	case "", "lens", "map", "canvas-workpad", "canvas-element", "graph-workspace", "connector", "rule":
+	case "", "lens", "map", "canvas-workpad", "canvas-element", "graph-workspace", "connector", "rule", "action":
 		return false
 	}
 	return true
 }
 
-// Removes all non-compatible object types from the panel json object
+// SanitizePanelJSON Removes all non-compatible object types from the panel json object
 func (do *DashboardObject) SanitizePanelJSON() (err error) {
 	var panels []map[string]interface{}
 

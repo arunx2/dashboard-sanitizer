@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"dashboard-sanitizer/config"
 	sm "dashboard-sanitizer/model"
-	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/clarketm/json"
 	"github.com/olivere/ndjson"
 	"os"
 )
