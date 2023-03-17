@@ -84,10 +84,10 @@ func (do *DashboardObject) MakeCompatibleToOS() (err error) {
 		do.References = temp
 	case "visualization":
 		do.MigrationVersion.Visualization = "7.9.3"
-		break
 	case "index-pattern":
 		do.MigrationVersion.IndexPattern = "7.6.0"
-		break
+	case "url":
+		do.SanitizeLocationJSON()
 	}
 	return
 }
@@ -131,5 +131,23 @@ func (do *DashboardObject) SanitizePanelJSON() (err error) {
 		return er
 	}
 	do.Attributes.PanelsJSON = string(resultBytes)
+	return
+}
+
+func (do *DashboardObject) SanitizeLocationJSON() (err error) {
+	var locationJson map[string]interface{}
+	err = json.Unmarshal([]byte(do.Attributes.LocatorJSON), &locationJson)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	if locationJson["state"] != nil {
+		state := locationJson["state"].(map[string]interface{})
+		if state["url"] != nil {
+			do.Attributes.Url = fmt.Sprintf("%v", state["url"])
+			do.Attributes.LocatorJSON = ""
+			do.Attributes.Slug = ""
+		}
+	}
 	return
 }
